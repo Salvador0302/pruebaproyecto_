@@ -83,7 +83,7 @@ with mcol2:
     physhlth = st.slider("Días de mala salud física (últimos 30 días)", 0, 30, 0)
 
 # --- CALCULO DEL ÍNDICE DE RIESGO ---
-health_risk_index = genhlth * bmi
+health_risk_index = genhlth
 
 input_data = {
     'HighBP': highbp,
@@ -106,7 +106,7 @@ input_data = {
     'Age': age,
     'Education': education,
     'Income': income,
-    'Índice_de_Salud_General': health_risk_index  # 🔄 nombre corregido
+    'Índice_de_Salud_General': health_risk_index
 }
 
 # --- BOTÓN DE PREDICCIÓN ---
@@ -134,24 +134,60 @@ if st.button("🔍 Evaluar Riesgo de Diabetes", type="primary"):
         - Observa cambios en tu salud
         """)
 
-    # --- VISUALIZACIÓN DE FACTORES CLAVE ---
-    st.subheader("📊 Factores de Riesgo Clave")
-    fig, ax = plt.subplots(figsize=(10, 5))
-    risk_factors = {
-        'BMI': bmi,
-        'Índice Salud': health_risk_index,
-        'Alta Presión': "Sí" if highbp else "No",
-        'Inactividad Física': "Sí" if not physactivity else "No",
-        'Dieta Deficiente': "Sí" if not(fruits and veggies) else "No"
-    }
+# --- VISUALIZACIÓN DE FACTORES CLAVE ---
+st.subheader("📊 Factores de Riesgo Clave")
 
-    pd.Series(risk_factors).plot(kind='barh', ax=ax, color=["#e74c3c" if x=="Sí" or (isinstance(x,float) and x>25) else "#2ecc71" for x in risk_factors.values()])
-    ax.set_title("Perfil de Riesgo Personal")
+# Create a DataFrame for the risk factors
+risk_data = {
+    'Factor': [
+        'Salud General', 
+        'Presión Alta', 
+        'Colesterol Alto',
+        'Inactividad Física',
+        'Dieta Deficiente'
+    ],
+    'Valor': [
+        genhlth,
+        1 if highbp else 0,
+        1 if highchol else 0,
+        1 if not physactivity else 0,
+        1 if not (fruits and veggies) else 0
+    ],
+    'Tipo': ['Numérico', 'Categórico', 'Categórico', 'Categórico', 'Categórico']
+}
+
+risk_df = pd.DataFrame(risk_data)
+
+# Create the plot
+fig, ax = plt.subplots(figsize=(10, 5))
+colors = ['#e74c3c' if val > 0 or (factor == 'Salud General' and val > 3) else '#2ecc71' 
+          for val, factor in zip(risk_df['Valor'], risk_df['Factor'])]
+
+# Plot only numerical factors
+numerical_df = risk_df[risk_df['Tipo'] == 'Numérico']
+if not numerical_df.empty:
+    numerical_df.plot.barh(x='Factor', y='Valor', ax=ax, color=colors[:len(numerical_df)], legend=False)
+    ax.set_title("Factores Numéricos de Riesgo")
     st.pyplot(fig)
+else:
+    st.warning("No hay factores numéricos para mostrar")
 
-    st.info("""
-    **Disclaimer:** Esta herramienta ofrece una estimación basada en datos, pero no reemplaza una evaluación médica profesional.
-    """)
+# Show categorical factors separately
+st.subheader("Factores Categóricos de Riesgo")
+categorical_df = risk_df[risk_df['Tipo'] == 'Categórico']
+if not categorical_df.empty:
+    for _, row in categorical_df.iterrows():
+        status = "⚠️ ALTO RIESGO" if row['Valor'] == 1 else "✅ BAJO RIESGO"
+        color = "#e74c3c" if row['Valor'] == 1 else "#2ecc71"
+        st.markdown(f"<span style='color:{color}; font-weight:bold'>{row['Factor']}: {status}</span>", 
+                    unsafe_allow_html=True)
+else:
+    st.info("No se identificaron factores categóricos de riesgo")
+
+# Move the disclaimer outside the if-else blocks
+st.info("""
+**Disclaimer:** Esta herramienta ofrece una estimación basada en datos, pero no reemplaza una evaluación médica profesional.
+""")
 
 # --- SIDEBAR ---
 st.sidebar.header("📌 Información Adicional")

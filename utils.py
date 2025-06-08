@@ -7,25 +7,22 @@ def load_model():
         return pickle.load(f)
 
 def predict_diabetes(input_data):
-    # Convertir input_data en DataFrame
+    # Convert input data to DataFrame
     input_df = pd.DataFrame([input_data])
-
-    # Renombrar columna si es necesario
-    if 'Índice_de_Salud_General' in input_df.columns:
-        input_df.rename(columns={'Índice_de_Salud_General': 'Health_Risk_Index'}, inplace=True)
-
-    # Asegurar orden correcto de columnas
+    
+    # Define expected features in EXACT order the model expects
     expected_features = [
         'HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke',
         'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies',
         'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'GenHlth',
         'MentHlth', 'PhysHlth', 'DiffWalk', 'Sex', 'Age', 'Education',
-        'Income', 'Health_Risk_Index'
+        'Income', 'Índice_de_Salud_General'
     ]
 
-    input_df = input_df[expected_features]  # Reordenar de forma segura
-
-    # Cargar modelo y predecir
+    # Ensure correct feature order
+    input_df = input_df[expected_features]
+    
+    # Load model and predict
     model = load_model()
     pred = model.predict(input_df)[0]
     proba = model.predict_proba(input_df)[0][1]
@@ -34,25 +31,25 @@ def predict_diabetes(input_data):
 
 # Feature explanations for users
 FEATURE_EXPLANATIONS = {
-    'HighBP': "Do you have high blood pressure?",
-    'HighChol': "Do you have high cholesterol?",
-    'CholCheck': "Ha realizado un chequeo de colesterol en los últimos años?",
-    'Smoker': "Es fumador?",
-    'Stroke': "Tubo ataque cerebrovascular?",
-    'HeartDiseaseorAttack': "Tubo enfermedad cardíaca o ataque al corazón?",
-    'PhysActivity': "Realiza actividad fisica?",
-    'Fruits': "Consume frutas?",
-    'Veggies': "Consume verduras?",
-    'HvyAlcoholConsump': "Consume alcohol?",
-    'AnyHealthcare': "Tiene algún tipo de seguro o acceso a atención médica?",
-    'NoDocbcCost': "Alguna vez no visitó al médico por razones de costo?",
-    'GenHlth': "Salud General",
-    'MentHlth': "Salud Mental",
-    'PhysHlth': "Salud Fisica",
-    'DiffWalk': "Tiene dificultad para caminar?",
-    'Sex': "Cual es su genero?",
-    'Age': "Edad",
-    'Education': "Cual es su nivel de educacion?",
-    'Income': "Ingreso",
-    'Health_Risk_Index': "Please provide information for Health Risk Index."
+    'HighBP': "¿Tiene presión arterial alta?",
+    'HighChol': "¿Tiene colesterol alto?",
+    'CholCheck': "¿Se ha revisado el colesterol en los últimos 5 años?",
+    'Smoker': "¿Ha fumado al menos 100 cigarrillos en su vida?",
+    'Stroke': "¿Alguna vez le han diagnosticado un derrame cerebral?",
+    'HeartDiseaseorAttack': "¿Tiene enfermedad coronaria o ha tenido un ataque al corazón?",
+    'PhysActivity': "¿Realiza actividad física fuera de su trabajo habitual?",
+    'Fruits': "¿Consume frutas 1 o más veces al día?",
+    'Veggies': "¿Consume verduras 1 o más veces al día?",
+    'HvyAlcoholConsump': "¿Es un bebedor excesivo de alcohol? (Hombres: >14 bebidas/semana, Mujeres: >7 bebidas/semana)",
+    'AnyHealthcare': "¿Tiene algún tipo de seguro de salud?",
+    'NoDocbcCost': "¿Alguna vez no visitó al médico por razones de costo?",
+    'GenHlth': "¿Cómo calificaría su salud general? (1 = Excelente, 5 = Mala)",
+    'MentHlth': "Días de mala salud mental en los últimos 30 días",
+    'PhysHlth': "Días de mala salud física en los últimos 30 días",
+    'DiffWalk': "¿Tiene dificultad para caminar o subir escaleras?",
+    'Sex': "Sexo biológico",
+    'Age': "Grupo de edad",
+    'Education': "Nivel educativo más alto",
+    'Income': "Rango de ingresos anuales",
+    'Índice_de_Salud_General': "Índice combinado de salud general y BMI"
 }
