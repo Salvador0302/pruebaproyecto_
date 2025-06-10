@@ -43,7 +43,7 @@ with col1:
     highbp = st.radio(FEATURE_EXPLANATIONS['HighBP'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="highbp")
     highchol = st.radio(FEATURE_EXPLANATIONS['HighChol'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="highchol")
     bmi = st.slider("Índice de Masa Corporal (BMI)", 15.0, 45.0, 25.0, 0.1)
-    genhlth = st.selectbox("Salud General (1=Deficiente, 5=Excelente)", [1,2,3,4,5])
+    genhlth = st.selectbox("Salud General (1=Excelente, 5=Deficiente)", [1,2,3,4,5])
 
 with col2:
     st.subheader("Estilo de Vida")
