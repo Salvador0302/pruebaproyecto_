@@ -1,11 +1,34 @@
-# streamlit_app.py
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from utils import predict_diabetes, FEATURE_EXPLANATIONS
+from utils import predict_diabetes, FEATURE_EXPLANATIONS_ES, FEATURE_EXPLANATIONS_EN, TEXTS
 
-# --- CONFIGURACION DE PAGINA ---
+# Pagina
 st.set_page_config(page_title="Diabetes Risk Predictor", page_icon="🩺", layout="wide")
+
+# --- CONFIGURACIÓN DE IDIOMA ---
+if 'lang' not in st.session_state:
+    st.session_state.lang = 'es'
+
+# Botones de idioma en la esquina superior derecha
+col1, col2 = st.columns([0.9, 0.1])
+with col2:
+    # Usamos st.empty() para evitar que los botones se dupliquen en el cambio de idioma
+    en_btn = st.button("🇺🇸 EN", key="en_btn")
+    es_btn = st.button("🇪🇸 ES", key="es_btn")
+    
+    if en_btn:
+        st.session_state.lang = 'en'
+        st.rerun()
+    if es_btn:
+        st.session_state.lang = 'es'
+        st.rerun()
+
+# Seleccionar textos según idioma
+lang = st.session_state.lang
+texts = TEXTS[lang]
+features = FEATURE_EXPLANATIONS_ES if lang == 'es' else FEATURE_EXPLANATIONS_EN
+
 
 # --- ESTILOS PERSONALIZADOS ---
 st.markdown("""
@@ -29,58 +52,62 @@ body {
 """, unsafe_allow_html=True)
 
 # --- TITULO E INTRODUCCION ---
-st.title("🩺 Diabetes Risk Assessment Tool")
-st.markdown("""
-Esta herramienta predice el **riesgo de diabetes** basado en tus indicadores de salud.
-""")
+st.title(texts['title'])
+st.markdown(texts['subtitle'])
 
 # --- PERFIL DEL USUARIO ---
-st.header("Perfil de Salud del Usuario")
+st.header(texts['health_profile'])
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.subheader("Signos Vitales")
-    highbp = st.radio(FEATURE_EXPLANATIONS['HighBP'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="highbp")
-    highchol = st.radio(FEATURE_EXPLANATIONS['HighChol'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="highchol")
-    bmi = st.slider("Índice de Masa Corporal (BMI)", 15.0, 45.0, 25.0, 0.1)
-    genhlth = st.selectbox("Salud General (1=Deficiente, 5=Excelente)", [1,2,3,4,5])
+    st.subheader(texts['vital_signs'])
+    highbp = st.radio(features['HighBP'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="highbp")
+    highchol = st.radio(features['HighChol'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="highchol")
+    bmi = st.slider(texts['bmi'], 15.0, 45.0, 25.0, 0.1)
+    genhlth = st.selectbox(texts['gen_health'], [1,2,3,4,5])
 
 with col2:
-    st.subheader("Estilo de Vida")
-    smoker = st.radio(FEATURE_EXPLANATIONS['Smoker'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="smoker")
-    physactivity = st.radio(FEATURE_EXPLANATIONS['PhysActivity'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="physactivity")
-    fruits = st.radio(FEATURE_EXPLANATIONS['Fruits'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="fruits")
-    veggies = st.radio(FEATURE_EXPLANATIONS['Veggies'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="veggies")
-    alcohol = st.radio(FEATURE_EXPLANATIONS['HvyAlcoholConsump'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="alcohol")
+    st.subheader(texts['lifestyle'])
+    smoker = st.radio(features['Smoker'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="smoker")
+    physactivity = st.radio(features['PhysActivity'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="physactivity")
+    fruits = st.radio(features['Fruits'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="fruits")
+    veggies = st.radio(features['Veggies'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="veggies")
+    alcohol = st.radio(features['HvyAlcoholConsump'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="alcohol")
 
 with col3:
-    st.subheader("Historial Médico")
-    stroke = st.radio(FEATURE_EXPLANATIONS['Stroke'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="stroke")
-    heartdisease = st.radio(FEATURE_EXPLANATIONS['HeartDiseaseorAttack'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="heartdisease")
-    diffwalk = st.radio(FEATURE_EXPLANATIONS['DiffWalk'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="diffwalk")
-    cholcheck = st.radio(FEATURE_EXPLANATIONS['CholCheck'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="cholcheck")
-    nodoc = st.radio(FEATURE_EXPLANATIONS['NoDocbcCost'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí", key="nodoc")
+    st.subheader(texts['medical_history'])
+    stroke = st.radio(features['Stroke'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="stroke")
+    heartdisease = st.radio(features['HeartDiseaseorAttack'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="heartdisease")
+    diffwalk = st.radio(features['DiffWalk'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="diffwalk")
+    cholcheck = st.radio(features['CholCheck'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="cholcheck")
+    nodoc = st.radio(features['NoDocbcCost'], [0, 1], format_func=lambda x: "No" if x == 0 else "Sí" if lang == 'es' else "Yes", key="nodoc")
 
 # --- INFORMACIÓN DEMOGRÁFICA ---
-st.subheader("Información Demográfica")
+st.subheader(texts['demographic'])
 dcol1, dcol2, dcol3, dcol4 = st.columns(4)
 
 with dcol1:
-    age = st.selectbox("Rango de Edad", list(range(1,14)), format_func=lambda x: f"{x*5}-{x*5+4} años")
+    age = st.selectbox(texts['age'], list(range(1,14)), format_func=lambda x: f"{x*5}-{x*5+4} {'años' if lang == 'es' else 'years'}")
 with dcol2:
-    education = st.selectbox("Nivel Educativo", [1,2,3,4,5,6], format_func=lambda x: ["Inicial", "Primaria", "Secundaria Incompleta", "Secundaria Completa", "Técnico", "Universitario"][x-1])
+    education = st.selectbox(texts['education'], [1,2,3,4,5,6], format_func=lambda x: 
+        ["Inicial", "Primaria", "Secundaria Incompleta", "Secundaria Completa", "Técnico", "Universitario"][x-1] if lang == 'es'
+        else ["Elementary", "Middle School", "Some High School", "High School Grad", "Technical", "College"][x-1])
 with dcol3:
-    income = st.selectbox("Rango de Ingreso", [1,2,3,4,5,6,7,8], format_func=lambda x: f"S/. {x*500} - S/. {(x+1)*500}" if x<8 else "> S/. 4000")
+    income = st.selectbox(texts['income'], [1,2,3,4,5,6,7,8], format_func=lambda x: 
+        f"S/. {x*500} - S/. {(x+1)*500}" if x<8 else "> S/. 4000" if lang == 'es'
+        else f"${x*500} - ${(x+1)*500}" if x<8 else "> $4000")
 with dcol4:
-    sex = st.radio("Sexo", [0, 1], format_func=lambda x: "Femenino" if x == 0 else "Masculino", key="sex")
+    sex = st.radio(texts['gender'], [0, 1], format_func=lambda x: 
+        "Femenino" if x == 0 else "Masculino" if lang == 'es' 
+        else "Female" if x == 0 else "Male", key="sex")
 
 # --- ESTADO DE SALUD RECIENTE ---
-st.subheader("Estado de Salud Reciente")
+st.subheader(texts['recent_health'])
 mcol1, mcol2 = st.columns(2)
 with mcol1:
-    menthlth = st.slider("Días de mala salud mental (últimos 30 días)", 0, 30, 0)
+    menthlth = st.slider(texts['mental_health'], 0, 30, 0)
 with mcol2:
-    physhlth = st.slider("Días de mala salud física (últimos 30 días)", 0, 30, 0)
+    physhlth = st.slider(texts['physical_health'], 0, 30, 0)
 
 # --- CALCULO DEL ÍNDICE DE RIESGO ---
 health_risk_index = genhlth
@@ -110,65 +137,48 @@ input_data = {
 }
 
 # --- BOTÓN DE PREDICCIÓN ---
-if st.button("🔍 Evaluar Riesgo de Diabetes", type="primary"):
-    with st.spinner("Analizando tu perfil de salud..."):
+if st.button(texts['predict_button'], type="primary"):
+    with st.spinner("Analizando tu perfil de salud..." if lang == 'es' else "Analyzing your health profile..."):
         pred, prob = predict_diabetes(input_data)
         prob_percent = prob * 100
 
-        # Determinando categoria segun los rangos correspondientes
+        # Determinando categoria segun los rangos
         if prob_percent <= 55:
-            category = "no_diabetes"
-            message = "## ✅ No tiene diabetes"
+            message = texts['no_diabetes']
             color_style = "success"
-            recommendations = """
-            **Consejos:**
-            - Mantén tus hábitos saludables
-            - Realiza chequeos cada 5 años
-            """
+            recommendations = texts['no_diabetes_rec']
         elif 55 < prob_percent < 85:
-            category = "prediabetes"
-            message = "## ⚠️ Tiene prediabetes"
+            message = texts['prediabetes']
             color_style = "warning"
-            recommendations = """
-            **Recomendaciones:**
-            - Consulte a un médico para confirmar
-            - Monitoree sus niveles de glucosa
-            - Ajuste dieta y ejercicio
-            """
+            recommendations = texts['prediabetes_rec']
         else: 
-            category = "diabetes"
-            message = "## 🚨 Tiene diabetes"
+            message = texts['diabetes']
             color_style = "error"
-            recommendations = """
-            **Acciones urgentes:**
-            - Consulte a un médico inmediatamente
-            - Controle su dieta y medicación
-            - Realice exámenes de glucosa
-            """
+            recommendations = texts['diabetes_rec']
 
     st.divider()
-    st.header("🧾 Resultados del Análisis")
+    st.header(texts['results_title'])
 
     if color_style == "success":
-        st.success(f"{message}")
+        st.success(message)
     elif color_style == "warning":
-        st.warning(f"{message}")
+        st.warning(message)
     else:
-        st.error(f"{message}")
+        st.error(message)
     
     st.markdown(recommendations)
 
 # --- VISUALIZACIÓN DE FACTORES CLAVE ---
-st.subheader("📊 Factores de Riesgo Clave")
+st.subheader(texts['risk_factors'])
 
 # Create a DataFrame for the risk factors
 risk_data = {
     'Factor': [
-        'Salud General', 
-        'Presión', 
-        'Colesterol',
-        'Actividad Física',
-        'Dieta'
+        texts['gen_health'].split('(')[0].strip(), 
+        features['HighBP'], 
+        features['HighChol'],
+        features['PhysActivity'],
+        f"{features['Fruits']} & {features['Veggies']}"
     ],
     'Valor': [
         genhlth,
@@ -177,38 +187,30 @@ risk_data = {
         1 if not physactivity else 0,
         1 if not (fruits and veggies) else 0
     ],
-    'Tipo': ['Numérico', 'Categórico', 'Categórico', 'Categórico', 'Categórico']
+    'Tipo': ['Numérico' if lang == 'es' else 'Numerical', 
+             'Categórico' if lang == 'es' else 'Categorical', 
+             'Categórico' if lang == 'es' else 'Categorical', 
+             'Categórico' if lang == 'es' else 'Categorical', 
+             'Categórico' if lang == 'es' else 'Categorical']
 }
 
 risk_df = pd.DataFrame(risk_data)
 
-
 # Show categorical factors separately
-st.subheader("Factores Categóricos de Riesgo")
-categorical_df = risk_df[risk_df['Tipo'] == 'Categórico']
+st.subheader(texts['categorical_risk'])
+categorical_df = risk_df[risk_df['Tipo'] == ('Categórico' if lang == 'es' else 'Categorical')]
 if not categorical_df.empty:
     for _, row in categorical_df.iterrows():
-        status = "⚠️ ALTO RIESGO" if row['Valor'] == 1 else "✅ BAJO RIESGO"
+        status = "⚠️ ALTO RIESGO" if lang == 'es' and row['Valor'] == 1 else "✅ BAJO RIESGO" if lang == 'es' and row['Valor'] == 0 else "⚠️ HIGH RISK" if row['Valor'] == 1 else "✅ LOW RISK"
         color = "#e74c3c" if row['Valor'] == 1 else "#2ecc71"
         st.markdown(f"<span style='color:{color}; font-weight:bold'>{row['Factor']}: {status}</span>", 
                     unsafe_allow_html=True)
 else:
-    st.info("No se identificaron factores categóricos de riesgo")
+    st.info("No se identificaron factores categóricos de riesgo" if lang == 'es' else "No categorical risk factors identified")
 
-# Move the disclaimer outside the if-else blocks
-st.info("""
-**Disclaimer:** Esta herramienta ofrece una estimación basada en datos, pero no reemplaza una evaluación médica profesional.
-""")
+# Disclaimer
+st.info(texts['disclaimer'])
 
 # --- SIDEBAR ---
-st.sidebar.header("📌 Información Adicional")
-st.sidebar.markdown("""
-- **Modelo**: XGBoost (Recall: 90%)
-- **Fuente de datos**: CDC BRFSS 2015
-
-**Factores Considerados:**
-- Índice Salud General
-- Actividad Física
-- Hipertensión
-- Dieta y colesterol
-""")
+st.sidebar.header(texts['sidebar_title'])
+st.sidebar.markdown(texts['sidebar_content'])
