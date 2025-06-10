@@ -143,11 +143,11 @@ if st.button(texts['predict_button'], type="primary"):
         prob_percent = prob * 100
 
         # Determinando categoria segun los rangos
-        if prob_percent <= 55:
+        if prob_percent <= 42:
             message = texts['no_diabetes']
             color_style = "success"
             recommendations = texts['no_diabetes_rec']
-        elif 55 < prob_percent < 85:
+        elif 42 < prob_percent < 69:
             message = texts['prediabetes']
             color_style = "warning"
             recommendations = texts['prediabetes_rec']
