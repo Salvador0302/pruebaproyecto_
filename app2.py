@@ -147,7 +147,7 @@ if st.button(texts['predict_button'], type="primary"):
             message = texts['no_diabetes']
             color_style = "success"
             recommendations = texts['no_diabetes_rec']
-        elif 30 < prob_percent < 50:
+        elif 40 < prob_percent < 60:
             message = texts['prediabetes']
             color_style = "warning"
             recommendations = texts['prediabetes_rec']
