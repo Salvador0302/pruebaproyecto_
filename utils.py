@@ -4,32 +4,36 @@ import pandas as pd
 def load_model():
     """Load trained model from file"""
     with open('models/modelo_optimo_1.0_9_100_7_0.01_0.7_42.sav', 'rb') as f:
-        return pickle.load(f)
+        model = pickle.load(f)
+        # Verificar las características del modelo
+        print("Características del modelo:", model.get_booster().feature_names)
+        return model
 
 def predict_diabetes(input_data):
     # Convertir input_data en DataFrame
     input_df = pd.DataFrame([input_data])
-
-    # Renombrar columna si es necesario
-    if 'Índice_de_Salud_General' in input_df.columns:
-        input_df.rename(columns={'Índice_de_Salud_General': 'Health_Risk_Index'}, inplace=True)
-
-    # Asegurar orden correcto de columnas
+    
+    # Lista actualizada con los nombres EXACTOS que espera el modelo
     expected_features = [
         'HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke',
         'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies',
         'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'GenHlth',
         'MentHlth', 'PhysHlth', 'DiffWalk', 'Sex', 'Age', 'Education',
-        'Income', 'Health_Risk_Index'
+        'Income', 'Índice_de_Salud_General'  # Nombre CORRECTO en español
     ]
-
-    input_df = input_df[expected_features]  # Reordenar de forma segura
-
+    
+    # Verificar y reordenar
+    missing = [f for f in expected_features if f not in input_df.columns]
+    if missing:
+        raise ValueError(f"Faltan características: {missing}")
+    
+    input_df = input_df[expected_features]
+    
     # Cargar modelo y predecir
     model = load_model()
     pred = model.predict(input_df)[0]
     proba = model.predict_proba(input_df)[0][1]
-
+    
     return pred, proba
 
 # Diccionarios de idiomas
